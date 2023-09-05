@@ -1,8 +1,11 @@
-public enum DataType : byte
+namespace Network.Enums
 {
-    ConnectionCheck = 0,
-    Authentification,
-    Text,
-    Image,
-    Binary
+    public enum DataType : byte
+    {
+        ConnectionCheck = 0,
+        Authentification,
+        Text,
+        Image,
+        Binary
+    }
 }

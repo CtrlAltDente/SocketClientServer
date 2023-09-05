@@ -1,0 +1,24 @@
+using Network.TCP;
+using Network.TCP.SocketLogic;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class UnityServerManager : UnityNetworkManager
+{
+    public override void Initialize()
+    {
+        _protocolLogic = new TcpServerLogic(OnConnectionToHandlers);
+        _protocolLogic.Initialize(ServerIpAddress, ServerPort);
+    }
+
+    public override void Shutdown()
+    {
+        _protocolLogic.Shutdown();
+    }
+
+    public override void SendDataPackage(DataPackage dataPackage)
+    {
+
+    }
+}
