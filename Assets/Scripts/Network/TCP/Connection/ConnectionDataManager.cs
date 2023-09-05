@@ -1,20 +1,23 @@
 using Network.Data;
+using Network.Processors;
 using Network.TCP;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace Network.Processors
 {
     [Serializable]
-    public class ConnectionDataReceiver
+    public class ConnectionDataManager
     {
+        public Queue<DataPackage> DataToSend = new Queue<DataPackage>();
+
         public Action<DataPackage> OnDataPackageReceived;
+
+        public int ConnectionsCount => Connections.Count;
 
         [SerializeField]
         private List<Connection> Connections = new List<Connection>();
@@ -24,11 +27,6 @@ namespace Network.Processors
             Connections.Add(connection);
         }
 
-        public void RemoveConnection(Connection connection)
-        {
-            Connections.Remove(connection);
-        }
-
         public void ReceiveDataFromAll()
         {
             try
@@ -36,6 +34,28 @@ namespace Network.Processors
                 foreach (Connection connection in Connections)
                 {
                     ReadDataFromConnectionStream(connection);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+            }
+        }
+
+        public void SendDataToAll()
+        {
+            try
+            {
+                if (DataToSend.Count > 0)
+                {
+                    DataPackage dataPackage = DataToSend.Dequeue();
+
+                    byte[] data = dataPackage.DataPackageToBytes();
+
+                    foreach (Connection connection in Connections)
+                    {
+                        SendDataToConnection(connection, data);
+                    }
                 }
             }
             catch (Exception e)
@@ -79,6 +99,29 @@ namespace Network.Processors
                 {
                     Connections.Remove(connection);
                     Debug.Log("Removed");
+                }
+            }
+        }
+
+        private async void SendDataToConnection(Connection connection, byte[] data)
+        {
+            try
+            {
+                NetworkStream networkStream = connection.TcpClient.GetStream();
+
+                if (networkStream.CanWrite)
+                {
+                    await networkStream.WriteAsync(data, 0, data.Length);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+
+                if (Connections.Contains(connection))
+                {
+                    Debug.Log("Removed");
+                    Connections.Remove(connection);
                 }
             }
         }

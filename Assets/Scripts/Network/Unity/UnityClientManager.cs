@@ -11,18 +11,14 @@ namespace Network.UnityComponents
     {
         public override void Initialize()
         {
-            _protocolLogic = new TcpClientLogic(OnConnectionToHandlers);
+            _protocolLogic = new TcpClientLogic(DoOnConnectionInitializedOperations);
             _protocolLogic.Initialize(ServerIpAddress, ServerPort);
         }
 
         public override void Shutdown()
         {
+            StopCoroutine(NetworkOperationsCoroutine);
             _protocolLogic.Shutdown();
-        }
-
-        public override void SendDataPackage(DataPackage dataPackage)
-        {
-
         }
     }
 }

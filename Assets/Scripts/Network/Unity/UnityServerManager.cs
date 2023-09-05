@@ -9,20 +9,18 @@ namespace Network.UnityComponents
 {
     public class UnityServerManager : UnityNetworkManager
     {
+        private Coroutine _listenConnectionsCoroutine;
+
         public override void Initialize()
         {
-            _protocolLogic = new TcpServerLogic(OnConnectionToHandlers);
+            _protocolLogic = new TcpServerLogic(DoOnConnectionInitializedOperations);
             _protocolLogic.Initialize(ServerIpAddress, ServerPort);
         }
 
         public override void Shutdown()
         {
+            StopCoroutine(NetworkOperationsCoroutine);
             _protocolLogic.Shutdown();
-        }
-
-        public override void SendDataPackage(DataPackage dataPackage)
-        {
-
         }
     }
 }

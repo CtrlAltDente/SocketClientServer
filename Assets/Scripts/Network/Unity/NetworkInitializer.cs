@@ -28,5 +28,11 @@ namespace Network.UnityComponents
             NetworkManager = NetworkRoleManagerFactory.CreateNetworkManager(NetworkRole, gameObject);
             NetworkManager.Initialize();
         }
+
+        public void Shutdown()
+        {
+            NetworkManager.Shutdown();
+            Destroy(NetworkManager);
+        }
     }
 }

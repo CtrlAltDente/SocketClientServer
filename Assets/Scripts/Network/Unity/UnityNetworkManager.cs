@@ -6,6 +6,7 @@ using Network.TCP;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -13,20 +14,25 @@ namespace Network.UnityComponents
 {
     public abstract class UnityNetworkManager : MonoBehaviour
     {
+        [Range(20, 60)] public int UpdatesPerSecond = 40;
+
         public string ServerIpAddress = "192.168.88.29";
         public int ServerPort = 3334;
 
-        public Action<DataPackage> OnDataPackageReceived;
+        public UnityEvent<DataPackage> OnDataPackageReceived;
 
-        public ConnectionDataSender DataSender = new ConnectionDataSender();
-        public ConnectionDataReceiver DataReceiver = new ConnectionDataReceiver();
+        [SerializeField]
+        private ConnectionDataManager _connectionDataManager = new ConnectionDataManager();
+        private Queue<DataPackage> DataPackagesToSendBuffer = new Queue<DataPackage>();
+
+        protected Coroutine NetworkOperationsCoroutine;
 
         protected IProtocolLogic _protocolLogic;
 
         private void Start()
         {
-            DataReceiver.OnDataPackageReceived += RaiseDataPackageReceiveEvent;
-            StartCoroutine(DoNetworkLogic());
+            _connectionDataManager.OnDataPackageReceived += RaiseDataPackageReceiveEvent;
+            NetworkOperationsCoroutine = StartCoroutine(DoNetworkLogic());
         }
 
         public void RaiseDataPackageReceiveEvent(DataPackage dataPackage)
@@ -34,28 +40,56 @@ namespace Network.UnityComponents
             OnDataPackageReceived?.Invoke(dataPackage);
         }
 
+        public void SendDataPackage(DataPackage dataPackage)
+        {
+            if (_connectionDataManager.ConnectionsCount > 0)
+            {
+                DataPackagesToSendBuffer.Enqueue(dataPackage);
+            }
+        }
+
         public abstract void Initialize();
 
         public abstract void Shutdown();
 
-        public abstract void SendDataPackage(DataPackage dataPackage);
-
-        protected void OnConnectionToHandlers(Connection connection)
+        protected void DoOnConnectionInitializedOperations(Connection connection)
         {
-            DataSender.AddConnection(connection);
-            DataReceiver.AddConnection(connection);
+            _connectionDataManager.AddConnection(connection);
         }
 
         private IEnumerator DoNetworkLogic()
         {
             while (true)
             {
-                yield return new WaitForSeconds(0.2f);
-                DataSender.DataToSend.Enqueue(new DataPackage(new byte[1] { 1 }, DataType.ConnectionCheck));
+                yield return new WaitForSeconds(1f / (float)UpdatesPerSecond);
 
-                DataReceiver.ReceiveDataFromAll();
-                DataSender.SendDataToAll();
+                if (_connectionDataManager.ConnectionsCount > 0)
+                {
+                    _connectionDataManager.DataToSend.Enqueue(new DataPackage(new byte[1] { 1 }, DataType.ConnectionCheck));
+
+                    MoveDataPackageFromBufferToManager();
+
+                    _connectionDataManager.ReceiveDataFromAll();
+                    _connectionDataManager.SendDataToAll();
+                }
+                else
+                {
+                    if(DataPackagesToSendBuffer.Count > 0)
+                    {
+                        DataPackagesToSendBuffer.Clear();
+                    }
+                }
             }
+        }
+
+        private void MoveDataPackageFromBufferToManager()
+        {
+            foreach(DataPackage dataPackage in DataPackagesToSendBuffer)
+            {
+                _connectionDataManager.DataToSend.Enqueue(DataPackagesToSendBuffer.Dequeue());
+            }
+
+            DataPackagesToSendBuffer.Clear();
         }
     }
 }

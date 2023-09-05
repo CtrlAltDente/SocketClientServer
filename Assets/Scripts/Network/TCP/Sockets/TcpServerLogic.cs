@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace Network.TCP.SocketLogic
     {
         private TcpListener _tcpListener;
 
-        private Task ListenConnectionsTask;
+        private Thread ListenConnectionsThread;
 
         public TcpServerLogic(Action<Connection> OnConnectionAction) : base(OnConnectionAction)
         {
@@ -28,8 +29,8 @@ namespace Network.TCP.SocketLogic
                 _tcpListener = new TcpListener(IPAddress.Parse(serverIpAddress), serverPort);
                 _tcpListener.Start();
 
-                ListenConnectionsTask = new Task(ListenNewConnections);
-                ListenConnectionsTask.Start();
+                ListenConnectionsThread = new Thread(ListenNewConnections);
+                ListenConnectionsThread.Start();
             }
             catch (Exception e)
             {
@@ -42,6 +43,7 @@ namespace Network.TCP.SocketLogic
             try
             {
                 _tcpListener.Stop();
+                ListenConnectionsThread.Abort();
             }
             catch (Exception e)
             {
@@ -49,25 +51,21 @@ namespace Network.TCP.SocketLogic
             }
         }
 
-        public async void ListenNewConnections()
+        private async void ListenNewConnections()
         {
             try
             {
-                while (_tcpListener != null)
+                while (true)
                 {
-                    Debug.Log("Listen");
                     TcpClient newClient = await _tcpListener.AcceptTcpClientAsync();
-                    Debug.Log("Listen1");
                     Connection newConnection = new Connection(newClient);
-                    Debug.Log("Listen2");
                     OnConnectionInitialized?.Invoke(newConnection);
-                    Debug.Log("New connection");
                 }
             }
             catch (Exception e)
             {
-                Shutdown();
                 Debug.LogError(e.Message);
+                Shutdown();
             }
         }
     }

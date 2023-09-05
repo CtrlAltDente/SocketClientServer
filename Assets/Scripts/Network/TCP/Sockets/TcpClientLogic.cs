@@ -12,7 +12,7 @@ namespace Network.TCP.SocketLogic
     {
         private TcpClient _tcpClient;
 
-        public TcpClientLogic(Action<Connection> OnConnectionAction) : base(OnConnectionAction)
+        public TcpClientLogic(Action<Connection> OnConnection) : base(OnConnection)
         {
 
         }
