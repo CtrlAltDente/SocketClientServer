@@ -1,24 +1,28 @@
+using Network.Data;
 using Network.TCP;
 using Network.TCP.SocketLogic;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UnityServerManager : UnityNetworkManager
+namespace Network.UnityComponents
 {
-    public override void Initialize()
+    public class UnityServerManager : UnityNetworkManager
     {
-        _protocolLogic = new TcpServerLogic(OnConnectionToHandlers);
-        _protocolLogic.Initialize(ServerIpAddress, ServerPort);
-    }
+        public override void Initialize()
+        {
+            _protocolLogic = new TcpServerLogic(OnConnectionToHandlers);
+            _protocolLogic.Initialize(ServerIpAddress, ServerPort);
+        }
 
-    public override void Shutdown()
-    {
-        _protocolLogic.Shutdown();
-    }
+        public override void Shutdown()
+        {
+            _protocolLogic.Shutdown();
+        }
 
-    public override void SendDataPackage(DataPackage dataPackage)
-    {
+        public override void SendDataPackage(DataPackage dataPackage)
+        {
 
+        }
     }
 }

@@ -1,30 +1,33 @@
 using Network.Enums;
-using Network.Interfaces;
+using Network.UnityComponents;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class NetworkRoleManagerFactory
+namespace Network.Factories
 {
-    public static UnityNetworkManager CreateNetworkManager(NetworkRole networkRole, GameObject gameObject)
+    public static class NetworkRoleManagerFactory
     {
-        UnityNetworkManager networkManager;
-
-        switch (networkRole)
+        public static UnityNetworkManager CreateNetworkManager(NetworkRole networkRole, GameObject gameObject)
         {
-            case NetworkRole.Server:
-                {
-                    networkManager = gameObject.AddComponent<UnityServerManager>();
-                    return networkManager;
-                }
-            case NetworkRole.Client:
-                {
-                    networkManager = gameObject.AddComponent<UnityClientManager>();
-                    return networkManager;
-                }
+            UnityNetworkManager networkManager;
 
-            default: throw new Exception("No role created");
+            switch (networkRole)
+            {
+                case NetworkRole.Server:
+                    {
+                        networkManager = gameObject.AddComponent<UnityServerManager>();
+                        return networkManager;
+                    }
+                case NetworkRole.Client:
+                    {
+                        networkManager = gameObject.AddComponent<UnityClientManager>();
+                        return networkManager;
+                    }
+
+                default: throw new Exception("No role created");
+            }
         }
     }
 }

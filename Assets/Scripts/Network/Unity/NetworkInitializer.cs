@@ -1,28 +1,32 @@
 using Network.Enums;
+using Network.Factories;
 using Network.Interfaces;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NetworkInitializer : MonoBehaviour
+namespace Network.UnityComponents
 {
-    public NetworkRole NetworkRole;
-
-    public UnityNetworkManager NetworkManager;
-
-    [SerializeField] private bool _initializeOnStart = false;
-
-    private void Start()
+    public class NetworkInitializer : MonoBehaviour
     {
-        if (_initializeOnStart)
+        public NetworkRole NetworkRole;
+
+        public UnityNetworkManager NetworkManager;
+
+        [SerializeField] private bool _initializeOnStart = false;
+
+        private void Start()
         {
-            Initialize();
+            if (_initializeOnStart)
+            {
+                Initialize();
+            }
         }
-    }
 
-    public void Initialize()
-    {
-        NetworkManager = NetworkRoleManagerFactory.CreateNetworkManager(NetworkRole, gameObject);
-        NetworkManager.Initialize();
+        public void Initialize()
+        {
+            NetworkManager = NetworkRoleManagerFactory.CreateNetworkManager(NetworkRole, gameObject);
+            NetworkManager.Initialize();
+        }
     }
 }

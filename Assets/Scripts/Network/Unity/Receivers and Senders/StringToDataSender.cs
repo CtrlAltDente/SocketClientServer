@@ -1,10 +1,11 @@
+using Network.Data;
 using Network.Enums;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace Network.Senders
+namespace Network.Processors
 {
     public class StringToDataSender : NetworkDataSender
     {

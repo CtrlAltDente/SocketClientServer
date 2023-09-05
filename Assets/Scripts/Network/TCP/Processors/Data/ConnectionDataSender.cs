@@ -1,3 +1,5 @@
+using Network.Data;
+using Network.TCP;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,60 +7,63 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using UnityEngine;
 
-[Serializable]
-public class ConnectionDataSender
+namespace Network.Processors
 {
-    public Queue<DataPackage> DataToSend = new Queue<DataPackage>();
-
-    [SerializeField]
-    private List<Connection> Connections = new List<Connection>();
-
-    public void AddConnection(Connection connection)
+    [Serializable]
+    public class ConnectionDataSender
     {
-        Connections.Add(connection);
-    }
+        public Queue<DataPackage> DataToSend = new Queue<DataPackage>();
 
-    public void SendDataToAll()
-    {
-        try
+        [SerializeField]
+        private List<Connection> Connections = new List<Connection>();
+
+        public void AddConnection(Connection connection)
         {
-            if (DataToSend.Count > 0)
+            Connections.Add(connection);
+        }
+
+        public void SendDataToAll()
+        {
+            try
             {
-                DataPackage dataPackage = DataToSend.Dequeue();
-
-                byte[] data = dataPackage.DataPackageToBytes();
-
-                foreach (Connection connection in Connections)
+                if (DataToSend.Count > 0)
                 {
-                    SendDataToConnection(connection, data);
+                    DataPackage dataPackage = DataToSend.Dequeue();
+
+                    byte[] data = dataPackage.DataPackageToBytes();
+
+                    foreach (Connection connection in Connections)
+                    {
+                        SendDataToConnection(connection, data);
+                    }
                 }
             }
-        }
-        catch (Exception e)
-        {
-            Debug.LogError(e.Message);
-        }
-    }
-
-    private async void SendDataToConnection(Connection connection, byte[] data)
-    {
-        try
-        {
-            NetworkStream networkStream = connection.TcpClient.GetStream();
-
-            if(networkStream.CanWrite)
+            catch (Exception e)
             {
-                await networkStream.WriteAsync(data, 0, data.Length);
+                Debug.LogError(e.Message);
             }
         }
-        catch (Exception e)
-        {
-            Debug.LogError(e.Message);
 
-            if (Connections.Contains(connection))
+        private async void SendDataToConnection(Connection connection, byte[] data)
+        {
+            try
             {
-                Debug.Log("Removed");
-                Connections.Remove(connection);
+                NetworkStream networkStream = connection.TcpClient.GetStream();
+
+                if (networkStream.CanWrite)
+                {
+                    await networkStream.WriteAsync(data, 0, data.Length);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+
+                if (Connections.Contains(connection))
+                {
+                    Debug.Log("Removed");
+                    Connections.Remove(connection);
+                }
             }
         }
     }
