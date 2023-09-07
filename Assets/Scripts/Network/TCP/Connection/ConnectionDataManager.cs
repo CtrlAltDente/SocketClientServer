@@ -17,6 +17,7 @@ namespace Network.Processors
 
         public Action<DataPackage> OnDataPackageReceived;
 
+        public bool IsConnected => Connections.Count > 0;
         public int ConnectionsCount => Connections.Count;
 
         [SerializeField]

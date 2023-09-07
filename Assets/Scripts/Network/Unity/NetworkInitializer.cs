@@ -4,14 +4,20 @@ using Network.Interfaces;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Network.UnityComponents
 {
     public class NetworkInitializer : MonoBehaviour
     {
+        public string ServerIpAddress = "192.168.88.29";
+        public int ServerPort = 3334;
+
         public NetworkRole NetworkRole;
 
         public UnityNetworkManager NetworkManager;
+
+        public UnityEvent<UnityNetworkManager> OnNetworkManagerInitialized;
 
         [SerializeField] private bool _initializeOnStart = false;
 
@@ -26,7 +32,8 @@ namespace Network.UnityComponents
         public void Initialize()
         {
             NetworkManager = NetworkRoleManagerFactory.CreateNetworkManager(NetworkRole, gameObject);
-            NetworkManager.Initialize();
+            NetworkManager.Initialize(ServerIpAddress, ServerPort);
+            OnNetworkManagerInitialized?.Invoke(NetworkManager);
         }
 
         public void Shutdown()
