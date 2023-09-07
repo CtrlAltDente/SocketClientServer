@@ -23,16 +23,16 @@ namespace Network.UnityComponents
 
         [SerializeField]
         private ConnectionDataManager _connectionDataManager = new ConnectionDataManager();
-        private Queue<DataPackage> DataPackagesToSendBuffer = new Queue<DataPackage>();
+        private Queue<DataPackage> _dataPackagesToSendBuffer = new Queue<DataPackage>();
 
-        protected Coroutine NetworkOperationsCoroutine;
+        protected Coroutine _networkOperationsCoroutine;
 
         protected IProtocolLogic _protocolLogic;
 
         private void Start()
         {
             _connectionDataManager.OnDataPackageReceived += RaiseDataPackageReceiveEvent;
-            NetworkOperationsCoroutine = StartCoroutine(DoNetworkLogic());
+            _networkOperationsCoroutine = StartCoroutine(ReceiveAndSendDataPackages());
         }
 
         public void RaiseDataPackageReceiveEvent(DataPackage dataPackage)
@@ -44,11 +44,16 @@ namespace Network.UnityComponents
         {
             if (_connectionDataManager.ConnectionsCount > 0)
             {
-                DataPackagesToSendBuffer.Enqueue(dataPackage);
+                _dataPackagesToSendBuffer.Enqueue(dataPackage);
             }
         }
 
-        public abstract void Initialize();
+        public void Initialize()
+        {
+            Initialize(ServerIpAddress, ServerPort);
+        }
+
+        public abstract void Initialize(string serverIpAddress, int serverPort);
 
         public abstract void Shutdown();
 
@@ -57,7 +62,7 @@ namespace Network.UnityComponents
             _connectionDataManager.AddConnection(connection);
         }
 
-        private IEnumerator DoNetworkLogic()
+        private IEnumerator ReceiveAndSendDataPackages()
         {
             while (true)
             {
@@ -74,9 +79,9 @@ namespace Network.UnityComponents
                 }
                 else
                 {
-                    if(DataPackagesToSendBuffer.Count > 0)
+                    if(_dataPackagesToSendBuffer.Count > 0)
                     {
-                        DataPackagesToSendBuffer.Clear();
+                        _dataPackagesToSendBuffer.Clear();
                     }
                 }
             }
@@ -84,12 +89,12 @@ namespace Network.UnityComponents
 
         private void MoveDataPackageFromBufferToManager()
         {
-            foreach(DataPackage dataPackage in DataPackagesToSendBuffer)
+            foreach(DataPackage dataPackage in _dataPackagesToSendBuffer)
             {
-                _connectionDataManager.DataToSend.Enqueue(DataPackagesToSendBuffer.Dequeue());
+                _connectionDataManager.DataToSend.Enqueue(_dataPackagesToSendBuffer.Dequeue());
             }
 
-            DataPackagesToSendBuffer.Clear();
+            _dataPackagesToSendBuffer.Clear();
         }
     }
 }

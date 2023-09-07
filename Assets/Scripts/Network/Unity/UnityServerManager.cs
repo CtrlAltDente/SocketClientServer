@@ -9,17 +9,15 @@ namespace Network.UnityComponents
 {
     public class UnityServerManager : UnityNetworkManager
     {
-        private Coroutine _listenConnectionsCoroutine;
-
-        public override void Initialize()
+        public override void Initialize(string serverIpAddress, int serverPort)
         {
             _protocolLogic = new TcpServerLogic(DoOnConnectionInitializedOperations);
-            _protocolLogic.Initialize(ServerIpAddress, ServerPort);
+            _protocolLogic.Initialize(serverIpAddress, serverPort);
         }
 
         public override void Shutdown()
         {
-            StopCoroutine(NetworkOperationsCoroutine);
+            StopCoroutine(_networkOperationsCoroutine);
             _protocolLogic.Shutdown();
         }
     }
