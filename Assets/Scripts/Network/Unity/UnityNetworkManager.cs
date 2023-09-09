@@ -14,12 +14,14 @@ namespace Network.UnityComponents
 {
     public abstract class UnityNetworkManager : MonoBehaviour
     {
+        protected bool InitializeOnStart = false;
+
         [Range(20, 60)] public int UpdatesPerSecond = 40;
 
         public string ServerIpAddress = "192.168.88.29";
         public int ServerPort = 3334;
 
-        public UnityEvent<DataPackage> OnDataPackageReceived;
+        public UnityEvent<DataPackage> OnDataPackageReceived = new UnityEvent<DataPackage>();
 
         [SerializeField]
         private ConnectionDataManager _connectionDataManager = new ConnectionDataManager();
@@ -31,6 +33,11 @@ namespace Network.UnityComponents
 
         private void Start()
         {
+            if(InitializeOnStart)
+            {
+                Initialize();
+            }
+
             _connectionDataManager.OnDataPackageReceived += RaiseDataPackageReceiveEvent;
             _networkOperationsCoroutine = StartCoroutine(ReceiveAndSendDataPackages());
         }
