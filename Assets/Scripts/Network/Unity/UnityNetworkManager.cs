@@ -96,12 +96,15 @@ namespace Network.UnityComponents
 
         private void MoveDataPackageFromBufferToManager()
         {
-            foreach(DataPackage dataPackage in _dataPackagesToSendBuffer)
+            if (_dataPackagesToSendBuffer.Count > 0)
             {
-                _connectionDataManager.DataToSend.Enqueue(_dataPackagesToSendBuffer.Dequeue());
-            }
+                while(_dataPackagesToSendBuffer.Count>0)
+                {
+                    _connectionDataManager.DataToSend.Enqueue(_dataPackagesToSendBuffer.Dequeue());
+                }
 
-            _dataPackagesToSendBuffer.Clear();
+                _dataPackagesToSendBuffer.Clear();
+            }
         }
     }
 }
