@@ -6,11 +6,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Network.Tools
 {
     public class NetworkStringReceiver : MonoBehaviour
     {
+        public UnityEvent<string> OnStringReceived;
+
         [SerializeField]
         private UnityNetworkManager _unityNetworkManager = default;
 
@@ -34,8 +37,9 @@ namespace Network.Tools
         {
             if (dataPackage.DataType == DataType.Text)
             {
-                string receivedText = DecodeBytesToString(dataPackage.Data);
-                Debug.Log($"Received text: {receivedText}");
+                string receivedString = DecodeBytesToString(dataPackage.Data);
+                OnStringReceived?.Invoke(receivedString);
+                Debug.Log($"Received text: {receivedString}");
             }
         }
 

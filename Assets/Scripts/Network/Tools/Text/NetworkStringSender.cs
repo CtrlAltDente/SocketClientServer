@@ -13,7 +13,7 @@ namespace Network.Tools
         [SerializeField]
         private UnityNetworkManager _unityNetworkManager = default;
 
-        public void SendText(string text)
+        public void SendString(string text)
         {
             byte[] textInBytes = Encoding.UTF8.GetBytes(text);
             DataPackage dataPackage = new DataPackage(textInBytes, DataType.Text);

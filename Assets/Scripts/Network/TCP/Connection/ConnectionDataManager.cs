@@ -86,8 +86,6 @@ namespace Network.Processors
 
                         DataPackage receivedDataPackage = new DataPackage(data);
 
-                        Debug.Log($"Received data {receivedDataPackage.DataType}");
-
                         OnDataPackageReceived?.Invoke(receivedDataPackage);
                     }
                 }
