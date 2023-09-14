@@ -12,14 +12,20 @@ namespace Network.Tools
         [SerializeField]
         protected UnityNetworkManager _unityNetworkManager = default;
 
+        protected Queue<DataPackage> _dataPackagesQueue = new Queue<DataPackage>();
+
+        protected Coroutine _decodeDataCoroutine;
+
         public abstract void ProcessReceivedDataPackage(DataPackage dataPackage);
 
-        private void Start()
+        protected abstract IEnumerator DecodeData();
+
+        protected virtual void Start()
         {
             TrySubscribeOnUnityReceivePackageEvent();
         }
 
-        private void OnDestroy()
+        protected virtual void OnDestroy()
         {
             TryUnsubscribeOnUnityReceivePackageEvent();
         }
@@ -53,6 +59,14 @@ namespace Network.Tools
             {
                 Debug.LogWarning(e.Message);
                 Debug.LogWarning("Unity network manager doesn`t setted at start");
+            }
+        }
+
+        protected void CheckBufferOverloading()
+        {
+            if (_dataPackagesQueue.Count > 40)
+            {
+                _dataPackagesQueue.Clear();
             }
         }
     }
