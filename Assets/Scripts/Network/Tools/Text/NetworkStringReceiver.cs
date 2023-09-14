@@ -33,9 +33,6 @@ namespace Network.Tools
         {
             while (true)
             {
-                yield return new WaitForSeconds(1f / 25f);
-                yield return new WaitForEndOfFrame();
-
                 while (_dataPackagesQueue.Count > 0)
                 {
                     DataPackage dataPackage = _dataPackagesQueue.Dequeue();
