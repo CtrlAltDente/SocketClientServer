@@ -23,6 +23,9 @@ namespace Network.Processors
         [SerializeField]
         private List<Connection> Connections = new List<Connection>();
 
+        [SerializeField]
+        private int DataToSendCount;
+
         public void AddConnection(Connection connection)
         {
             Connections.Add(connection);
@@ -47,7 +50,9 @@ namespace Network.Processors
         {
             try
             {
-                if (DataToSend.Count > 0)
+                DataToSendCount = DataToSend.Count;
+
+                while (DataToSend.Count > 0)
                 {
                     DataPackage dataPackage = DataToSend.Dequeue();
 
