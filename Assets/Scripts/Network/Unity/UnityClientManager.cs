@@ -13,11 +13,12 @@ namespace Network.UnityComponents
         {
             _protocolLogic = new TcpClientLogic(DoOnConnectionInitializedOperations);
             _protocolLogic.Initialize(serverIpAddress, serverPort);
+            _isStared = true;
         }
 
         public override void Shutdown()
         {
-            StopCoroutine(_networkOperationsCoroutine);
+            _isStared = false;
             _protocolLogic.Shutdown();
         }
     }

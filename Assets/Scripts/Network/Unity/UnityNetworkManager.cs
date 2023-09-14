@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -14,9 +15,9 @@ namespace Network.UnityComponents
 {
     public abstract class UnityNetworkManager : MonoBehaviour
     {
-        protected bool InitializeOnStart = false;
+        public bool InitializeOnStart = false;
 
-        [Range(20, 60)] public int UpdatesPerSecond = 40;
+        [Range(20, 60)] public int UpdatesPerSecond = 60;
 
         public string ServerIpAddress = "192.168.88.29";
         public int ServerPort = 3334;
@@ -25,26 +26,36 @@ namespace Network.UnityComponents
 
         [SerializeField]
         private ConnectionDataManager _connectionDataManager = new ConnectionDataManager();
+
+        private Queue<DataPackage> _receivedDataPackages = new Queue<DataPackage>();
         private Queue<DataPackage> _dataPackagesToSendBuffer = new Queue<DataPackage>();
 
-        protected Coroutine _networkOperationsCoroutine;
+        [SerializeField]
+        private int _receivedCount;
+
+        protected Task _networkOperationsTask;
 
         protected IProtocolLogic _protocolLogic;
 
+        [SerializeField]
+        protected bool _isStared;
+
         private void Start()
         {
-            if(InitializeOnStart)
+            if (InitializeOnStart)
             {
                 Initialize();
             }
 
             _connectionDataManager.OnDataPackageReceived += RaiseDataPackageReceiveEvent;
-            _networkOperationsCoroutine = StartCoroutine(ReceiveAndSendDataPackages());
+
+            _networkOperationsTask = new Task(ReceiveAndSendDataPackages);
+            _networkOperationsTask.Start();
         }
 
         public void RaiseDataPackageReceiveEvent(DataPackage dataPackage)
         {
-            OnDataPackageReceived?.Invoke(dataPackage);
+            _receivedDataPackages.Enqueue(dataPackage);
         }
 
         public void SendDataPackage(DataPackage dataPackage)
@@ -69,24 +80,24 @@ namespace Network.UnityComponents
             _connectionDataManager.AddConnection(connection);
         }
 
-        private IEnumerator ReceiveAndSendDataPackages()
+        private void ReceiveAndSendDataPackages()
         {
             while (true)
             {
-                yield return new WaitForSeconds(1f / (float)UpdatesPerSecond);
-
                 if (_connectionDataManager.ConnectionsCount > 0)
                 {
-                    _connectionDataManager.DataToSend.Enqueue(new DataPackage(new byte[1] { 1 }, DataType.ConnectionCheck));
+                    //_connectionDataManager.DataToSend.Enqueue(new DataPackage(new byte[1], DataType.ConnectionCheck));
 
                     MoveDataPackageFromBufferToManager();
 
                     _connectionDataManager.ReceiveDataFromAll();
+                    _receivedCount = _receivedDataPackages.Count;
+                    ProcessReceivedData();
                     _connectionDataManager.SendDataToAll();
                 }
                 else
                 {
-                    if(_dataPackagesToSendBuffer.Count > 0)
+                    if (_dataPackagesToSendBuffer.Count > 0)
                     {
                         _dataPackagesToSendBuffer.Clear();
                     }
@@ -96,14 +107,22 @@ namespace Network.UnityComponents
 
         private void MoveDataPackageFromBufferToManager()
         {
-            if (_dataPackagesToSendBuffer.Count > 0)
+            while (_dataPackagesToSendBuffer.Count > 0)
             {
-                while(_dataPackagesToSendBuffer.Count>0)
-                {
-                    _connectionDataManager.DataToSend.Enqueue(_dataPackagesToSendBuffer.Dequeue());
-                }
+                DataPackage dataPackage = _dataPackagesToSendBuffer.Dequeue();
+                _connectionDataManager.DataToSend.Enqueue(dataPackage);
 
-                _dataPackagesToSendBuffer.Clear();
+                Debug.Log("Data moved from buffer to send");
+            }
+        }
+
+        private void ProcessReceivedData()
+        {
+            while (_receivedDataPackages.Count > 0)
+            {
+                DataPackage dataPackage = _receivedDataPackages.Dequeue();
+
+                OnDataPackageReceived?.Invoke(dataPackage);
             }
         }
     }
