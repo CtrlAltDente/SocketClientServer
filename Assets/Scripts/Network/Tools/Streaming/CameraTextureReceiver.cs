@@ -34,7 +34,7 @@ namespace Network.Tools
         {
             while (true)
             {
-                if (_dataPackagesQueue.Count > 0)
+                while (_dataPackagesQueue.Count > 0)
                 {
                     DataPackage dataPackage = _dataPackagesQueue.Dequeue();
 
