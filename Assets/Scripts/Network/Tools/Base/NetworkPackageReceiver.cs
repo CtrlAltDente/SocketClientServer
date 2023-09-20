@@ -1,25 +1,31 @@
 using Network.Data;
-using Network.Enums;
 using Network.UnityComponents;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 namespace Network.Tools
 {
-    public class NetworkStringReceiver : MonoBehaviour
+    public abstract class NetworkPackageReceiver : MonoBehaviour
     {
         [SerializeField]
-        private UnityNetworkManager _unityNetworkManager = default;
+        protected UnityNetworkManager _unityNetworkManager = default;
 
-        private void Start()
+        protected Queue<DataPackage> _dataPackagesQueue = new Queue<DataPackage>();
+
+        protected Coroutine _decodeDataCoroutine;
+
+        public abstract void ProcessReceivedDataPackage(DataPackage dataPackage);
+
+        protected abstract IEnumerator DecodeData();
+
+        protected virtual void Start()
         {
             TrySubscribeOnUnityReceivePackageEvent();
         }
 
-        private void OnDestroy()
+        protected virtual void OnDestroy()
         {
             TryUnsubscribeOnUnityReceivePackageEvent();
         }
@@ -30,20 +36,11 @@ namespace Network.Tools
             TrySubscribeOnUnityReceivePackageEvent();
         }
 
-        public void ProcessReceivedDataPackageAsString(DataPackage dataPackage)
-        {
-            if (dataPackage.DataType == DataType.Text)
-            {
-                string receivedText = DecodeBytesToString(dataPackage.Data);
-                Debug.Log($"Received text: {receivedText}");
-            }
-        }
-
         private void TrySubscribeOnUnityReceivePackageEvent()
         {
             try
             {
-                _unityNetworkManager.OnDataPackageReceived.AddListener(ProcessReceivedDataPackageAsString);
+                _unityNetworkManager.OnDataPackageReceived.AddListener(ProcessReceivedDataPackage);
             }
             catch (Exception e)
             {
@@ -56,7 +53,7 @@ namespace Network.Tools
         {
             try
             {
-                _unityNetworkManager.OnDataPackageReceived.RemoveListener(ProcessReceivedDataPackageAsString);
+                _unityNetworkManager.OnDataPackageReceived.RemoveListener(ProcessReceivedDataPackage);
             }
             catch (Exception e)
             {
@@ -65,9 +62,12 @@ namespace Network.Tools
             }
         }
 
-        private string DecodeBytesToString(byte[] dataBytes)
+        protected void CheckBufferOverloading()
         {
-            return Encoding.UTF8.GetString(dataBytes);
+            if (_dataPackagesQueue.Count > 40)
+            {
+                _dataPackagesQueue.Clear();
+            }
         }
     }
 }

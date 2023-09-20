@@ -35,22 +35,7 @@ namespace Network.Data
             byte[] byteWithOffset = new byte[byteArray.Length - offset];
             Array.Copy(byteArray, offset, byteWithOffset, 0, byteArray.Length - offset);
 
-            return RemoveEmptyBytesInArrayAndReturnByteList(byteWithOffset).ToArray();
-        }
-
-        private List<byte> RemoveEmptyBytesInArrayAndReturnByteList(byte[] byteArray)
-        {
-            List<byte> fixedBytes = new List<byte>();
-
-            foreach (byte byteInArray in byteArray)
-            {
-                if (byteInArray.ToString("X2") != "00")
-                {
-                    fixedBytes.Add(byteInArray);
-                }
-            }
-
-            return fixedBytes;
+            return byteWithOffset;
         }
     }
 }

@@ -8,21 +8,13 @@ using UnityEngine;
 
 namespace Network.Tools
 {
-    public class NetworkStringSender : MonoBehaviour
+    public class NetworkStringSender : NetworkPackageSender
     {
-        [SerializeField]
-        private UnityNetworkManager _unityNetworkManager = default;
-
-        public void SendText(string text)
+        public void SendString(string text)
         {
             byte[] textInBytes = Encoding.UTF8.GetBytes(text);
             DataPackage dataPackage = new DataPackage(textInBytes, DataType.Text);
             _unityNetworkManager.SendDataPackage(dataPackage);
-        }
-
-        public void SetUnityNetworkManager(UnityNetworkManager unityNetworkManager)
-        {
-            _unityNetworkManager = unityNetworkManager;
         }
     }
 }
