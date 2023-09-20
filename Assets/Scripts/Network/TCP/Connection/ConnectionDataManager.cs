@@ -33,90 +33,63 @@ namespace Network.Processors
 
         public void ReceiveDataFromAll()
         {
-            try
+            foreach (Connection connection in Connections)
             {
-                foreach (Connection connection in Connections)
-                {
-                    ReadDataFromConnectionStream(connection);
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e.Message);
+                ReadDataFromConnection(connection);
             }
         }
 
         public void SendDataToAll()
         {
-            try
-            {
-                DataToSendCount = DataToSend.Count;
+            DataToSendCount = DataToSend.Count;     //this is for debug
 
-                while (DataToSend.Count > 0)
+            while (DataToSend.Count > 0)
+            {
+                DataPackage dataPackage = DataToSend.Dequeue();
+
+                byte[] data = dataPackage.DataPackageToBytes();
+
+                foreach (Connection connection in Connections)
                 {
-                    DataPackage dataPackage = DataToSend.Dequeue();
-
-                    byte[] data = dataPackage.DataPackageToBytes();
-
-                    foreach (Connection connection in Connections)
-                    {
-                        SendDataToConnection(connection, data);
-                    }
+                    AddDataToConnection(connection, data);
                 }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e.Message);
             }
         }
 
-        private async void ReadDataFromConnectionStream(Connection connection)
+        private void ReadDataFromConnection(Connection connection)
         {
             try
             {
-                NetworkStream networkStream = connection.TcpClient.GetStream();
-                if (networkStream.DataAvailable && networkStream.CanRead)
+                if (!connection.IsDataReceivingInProcess)
                 {
-                    using (MemoryStream memoryStream = new MemoryStream())
+                    Queue<byte[]> connectionReceivedData = connection.GetAllReceivedData();
+
+                    while (connectionReceivedData.Count > 0)
                     {
-                        do
-                        {
-                            byte[] buffer = new byte[32 * 1024];
-                            int bytes = await networkStream.ReadAsync(buffer, 0, buffer.Length);
-                            memoryStream.Write(buffer, 0, bytes);
-                        }
-                        while (networkStream.DataAvailable);
-
-                        byte[] data = memoryStream.ToArray();
-
-                        DataPackage receivedDataPackage = new DataPackage(data);
+                        DataPackage receivedDataPackage = new DataPackage(connectionReceivedData.Dequeue());
 
                         OnDataPackageReceived?.Invoke(receivedDataPackage);
                     }
                 }
             }
+
             catch (Exception e)
             {
                 Debug.LogError(e.Message);
 
                 if (Connections.Contains(connection))
                 {
-                    Connections.Remove(connection);
                     Debug.Log("Removed");
+                    Connections.Remove(connection);
                 }
             }
         }
 
-        private async void SendDataToConnection(Connection connection, byte[] data)
+        private void AddDataToConnection(Connection connection, byte[] data)
         {
             try
             {
-                NetworkStream networkStream = connection.TcpClient.GetStream();
-
-                if (networkStream.CanWrite)
-                {
-                    await networkStream.WriteAsync(data, 0, data.Length);
-                }
+                connection.AddDataToSend(data);
             }
             catch (Exception e)
             {

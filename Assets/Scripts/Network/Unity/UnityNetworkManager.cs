@@ -86,8 +86,6 @@ namespace Network.UnityComponents
             {
                 if (_connectionDataManager.ConnectionsCount > 0)
                 {
-                    //_connectionDataManager.DataToSend.Enqueue(new DataPackage(new byte[1], DataType.ConnectionCheck));
-
                     MoveDataPackageFromBufferToManager();
 
                     _connectionDataManager.ReceiveDataFromAll();
