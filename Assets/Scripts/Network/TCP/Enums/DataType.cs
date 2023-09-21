@@ -6,6 +6,6 @@ namespace Network.Enums
         Authentification,
         Text,
         Image,
-        Binary
+        Bytes
     }
 }
