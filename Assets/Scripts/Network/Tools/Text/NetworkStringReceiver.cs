@@ -40,7 +40,7 @@ namespace Network.Tools
                     string receivedString = Encoding.UTF8.GetString(dataBytes);
                     OnStringReceived?.Invoke(receivedString);
 
-                    yield return null;
+                    CheckBufferOverloading();
                 }
 
                 yield return null;
