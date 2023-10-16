@@ -18,6 +18,8 @@ namespace Network.Tools
             base.Start();
 
             _receivedTexture = new Texture2D(512, 512, GraphicsFormat.R8G8B8A8_UNorm, TextureCreationFlags.None);
+
+            _decodeDataCoroutine = StartCoroutine(DecodeData());
         }
 
         public override void ProcessReceivedDataPackage(DataPackage dataPackage)
@@ -25,23 +27,23 @@ namespace Network.Tools
             if (dataPackage.DataType == Enums.DataType.Image)
             {
                 _dataPackagesQueue.Enqueue(dataPackage);
-
-                if (_decodeDataCoroutine == null)
-                {
-                    _decodeDataCoroutine = StartCoroutine(DecodeData());
-                }
             }
         }
 
         protected override IEnumerator DecodeData()
         {
-            while (_dataPackagesQueue.Count > 0)
+            while (true)
             {
-                DataPackage dataPackage = _dataPackagesQueue.Dequeue();
-                ImageConversion.LoadImage(_receivedTexture, dataPackage.Data);
-                OnCameraTextureReceived?.Invoke(_receivedTexture);
+                while (_dataPackagesQueue.Count > 0)
+                {
+                    DataPackage dataPackage = _dataPackagesQueue.Dequeue();
+                    ImageConversion.LoadImage(_receivedTexture, dataPackage.Data);
+                    OnCameraTextureReceived?.Invoke(_receivedTexture);
 
-                CheckBufferOverloading();
+                    CheckBufferOverloading();
+
+                    yield return null;
+                }
 
                 yield return null;
             }

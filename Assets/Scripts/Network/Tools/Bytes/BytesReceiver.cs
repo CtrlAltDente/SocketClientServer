@@ -11,28 +11,35 @@ namespace Network.Tools
     {
         public UnityEvent<byte[]> OnBytesReceived;
 
+        protected override void Start()
+        {
+            base.Start();
+            _decodeDataCoroutine = StartCoroutine(DecodeData());
+        }
+
         public override void ProcessReceivedDataPackage(DataPackage dataPackage)
         {
             if (dataPackage.DataType == DataType.Bytes)
             {
                 _dataPackagesQueue.Enqueue(dataPackage);
-
-                if (_decodeDataCoroutine == null)
-                {
-                    _decodeDataCoroutine = StartCoroutine(DecodeData());
-                }
             }
         }
 
         protected override IEnumerator DecodeData()
         {
-            while (_dataPackagesQueue.Count > 0)
+            while (true)
             {
-                DataPackage dataPackage = _dataPackagesQueue.Dequeue();
+                while (_dataPackagesQueue.Count > 0)
+                {
+                    DataPackage dataPackage = _dataPackagesQueue.Dequeue();
 
-                OnBytesReceived?.Invoke(dataPackage.Data);
+                    OnBytesReceived?.Invoke(dataPackage.Data);
 
-                CheckBufferOverloading();
+                    CheckBufferOverloading();
+                
+                    yield return null;
+                }
+
                 yield return null;
             }
         }
