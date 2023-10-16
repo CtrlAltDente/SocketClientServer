@@ -1463,7 +1463,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  _initializeOnStart: 1
+  _initializeOnStart: 0
 --- !u!1 &1738084553
 GameObject:
   m_ObjectHideFlags: 0
@@ -1524,7 +1524,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  text: {fileID: 1981140701}
 --- !u!114 &1738084556
 MonoBehaviour:
   m_ObjectHideFlags: 0

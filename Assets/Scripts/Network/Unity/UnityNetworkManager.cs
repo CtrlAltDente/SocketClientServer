@@ -33,7 +33,8 @@ namespace Network.UnityComponents
         [SerializeField]
         private int _receivedCount;
 
-        protected Thread _networkOperationsThread;
+        protected Thread _sendPackagesThread;
+        protected Task _processReceivedPackagesTask;
 
         protected IProtocolLogic _protocolLogic;
 
@@ -49,8 +50,11 @@ namespace Network.UnityComponents
 
             _connectionDataManager.OnDataPackageReceived += RaiseDataPackageReceiveEvent;
 
-            _networkOperationsThread = new Thread(ReceiveAndSendDataPackages);
-            _networkOperationsThread.Start();
+            _sendPackagesThread = new Thread(SendDataPackages);
+            _sendPackagesThread.Start();
+
+            _processReceivedPackagesTask = new Task(ProcessReceivedPackages);
+            _processReceivedPackagesTask.Start();
         }
 
         public void RaiseDataPackageReceiveEvent(DataPackage dataPackage)
@@ -80,17 +84,13 @@ namespace Network.UnityComponents
             _connectionDataManager.AddConnection(connection);
         }
 
-        private void ReceiveAndSendDataPackages()
+        private void SendDataPackages()
         {
             while (_isStarted)
             {
                 if (_connectionDataManager.ConnectionsCount > 0)
                 {
                     MoveDataPackageFromBufferToManager();
-
-                    _connectionDataManager.ReceiveDataFromAll();
-                    _receivedCount = _receivedDataPackages.Count;
-                    ProcessReceivedData();
                     _connectionDataManager.SendDataToAll();
                 }
                 else
@@ -99,6 +99,19 @@ namespace Network.UnityComponents
                     {
                         _dataPackagesToSendBuffer.Clear();
                     }
+                }
+            }
+        }
+
+        private void ProcessReceivedPackages()
+        {
+            while (_isStarted)
+            {
+                if (_connectionDataManager.ConnectionsCount > 0)
+                {
+                    _connectionDataManager.ReceiveDataFromAll();
+                    _receivedCount = _receivedDataPackages.Count;
+                    ProcessReceivedData();
                 }
             }
         }
