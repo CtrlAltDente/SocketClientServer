@@ -14,11 +14,11 @@ namespace Network.Tools
 
         protected Queue<DataPackage> _dataPackagesQueue = new Queue<DataPackage>();
 
-        protected Coroutine _decodeDataCoroutine;
+        protected Coroutine _decodeDataCoroutine = null;
 
         public abstract void ProcessReceivedDataPackage(DataPackage dataPackage);
 
-        protected abstract IEnumerator DecodeData();
+        protected abstract void DecodeData();
 
         protected virtual void Start()
         {
@@ -36,11 +36,23 @@ namespace Network.Tools
             TrySubscribeOnUnityReceivePackageEvent();
         }
 
+        private IEnumerator ProcessData()
+        {
+            while (_unityNetworkManager)
+            {
+                DecodeData();
+                yield return null;
+            }
+
+            yield return null;
+        }
+
         private void TrySubscribeOnUnityReceivePackageEvent()
         {
             try
             {
                 _unityNetworkManager.OnDataPackageReceived.AddListener(ProcessReceivedDataPackage);
+                _decodeDataCoroutine = StartCoroutine(ProcessData());
             }
             catch (Exception e)
             {

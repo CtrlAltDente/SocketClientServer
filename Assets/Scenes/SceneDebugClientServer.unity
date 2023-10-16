@@ -1524,6 +1524,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  _receivedTextureSize: {x: 1024, y: 1024}
 --- !u!114 &1738084556
 MonoBehaviour:
   m_ObjectHideFlags: 0
