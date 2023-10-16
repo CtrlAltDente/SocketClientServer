@@ -62,9 +62,9 @@ namespace Network.TCP.SocketLogic
                     OnConnectionInitialized?.Invoke(newConnection);
                 }
             }
-            catch (Exception e)
+            catch
             {
-                Debug.LogError(e.Message);
+                Debug.LogError("Tcp listener is Closed");
                 Shutdown();
             }
         }

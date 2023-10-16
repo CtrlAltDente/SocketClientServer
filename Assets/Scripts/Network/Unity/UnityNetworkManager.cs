@@ -57,6 +57,11 @@ namespace Network.UnityComponents
             _processReceivedPackagesTask.Start();
         }
 
+        private void OnDestroy()
+        {
+            Shutdown();
+        }
+
         public void RaiseDataPackageReceiveEvent(DataPackage dataPackage)
         {
             _receivedDataPackages.Enqueue(dataPackage);
@@ -75,9 +80,14 @@ namespace Network.UnityComponents
             Initialize(ServerIpAddress, ServerPort);
         }
 
-        public abstract void Initialize(string serverIpAddress, int serverPort);
+        public void Shutdown()
+        {
+            _isStarted = false;
+            _connectionDataManager.ShutdownConnectionsThreads();
+            _protocolLogic.Shutdown();
+        }
 
-        public abstract void Shutdown();
+        public abstract void Initialize(string serverIpAddress, int serverPort);
 
         protected void DoOnConnectionInitializedOperations(Connection connection)
         {
@@ -88,6 +98,8 @@ namespace Network.UnityComponents
         {
             while (_isStarted)
             {
+
+                Debug.Log("Manager send data");
                 if (_connectionDataManager.ConnectionsCount > 0)
                 {
                     MoveDataPackageFromBufferToManager();

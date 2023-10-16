@@ -15,11 +15,5 @@ namespace Network.UnityComponents
             _protocolLogic.Initialize(serverIpAddress, serverPort);
             _isStarted = true;
         }
-
-        public override void Shutdown()
-        {
-            _isStarted = false;
-            _protocolLogic.Shutdown();
-        }
     }
 }

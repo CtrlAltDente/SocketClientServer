@@ -15,6 +15,10 @@ namespace Network.TCP
         public TcpClient TcpClient { get; private set; }
         public string EndIp;
 
+        public bool IsConnected = false;
+
+        public Action<Connection> OnConnectionClosed;
+
         public bool IsDataSending => _dataToSend.Count > 0;
         public bool IsDataReceivingInProcess => _networkStream.DataAvailable;
 
@@ -36,15 +40,15 @@ namespace Network.TCP
             _dataSendingThread = new Thread(SendData);
             _dataReceivingThread = new Thread(ReceiveData);
 
+            IsConnected = true;
+
             _dataSendingThread.Start();
             _dataReceivingThread.Start();
         }
 
-        ~Connection()
+        public void ShutdownThreads()
         {
-            TcpClient = null;
-            _dataSendingThread.Abort();
-            _dataSendingThread.Abort();
+            IsConnected = false;
         }
 
         public void AddDataToSend(byte[] data)
@@ -59,8 +63,9 @@ namespace Network.TCP
 
         private async void ReceiveData()
         {
-            while (TcpClient != null)
+            while (IsConnected)
             {
+                Debug.Log("Connectio send data");
                 try
                 {
                     if (_networkStream.DataAvailable && _networkStream.CanRead)
@@ -84,16 +89,17 @@ namespace Network.TCP
                 catch (Exception e)
                 {
                     Debug.LogError(e.Message);
-
-                    TcpClient = null;
+                    ShutdownThreads();
+                    OnConnectionClosed?.Invoke(this);
                 }
             }
         }
 
         private async void SendData()
         {
-            while (TcpClient != null)
+            while (IsConnected)
             {
+                Debug.Log("Connectio receive data");
                 try
                 {
                     if (_dataToSend.Count > 0)
@@ -108,8 +114,8 @@ namespace Network.TCP
                 catch (Exception e)
                 {
                     Debug.LogError(e.Message);
-
-                    TcpClient = null;
+                    ShutdownThreads();
+                    OnConnectionClosed?.Invoke(this);
                 }
             }
         }

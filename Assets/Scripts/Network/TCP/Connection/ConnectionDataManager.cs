@@ -29,6 +29,7 @@ namespace Network.Processors
         public void AddConnection(Connection connection)
         {
             Connections.Add(connection);
+            connection.OnConnectionClosed += RemoveClosedConnection;
         }
 
         public void ReceiveDataFromAll()
@@ -54,6 +55,19 @@ namespace Network.Processors
                     AddDataToConnection(connection, data);
                 }
             }
+        }
+
+        public void ShutdownConnectionsThreads()
+        {
+            foreach (Connection connection in Connections)
+            {
+                connection.ShutdownThreads();
+            }
+        }
+
+        private void RemoveClosedConnection(Connection connection)
+        {
+            Connections.Remove(connection);
         }
 
         private void ReadDataFromConnection(Connection connection)
