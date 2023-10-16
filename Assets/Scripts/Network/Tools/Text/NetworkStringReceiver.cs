@@ -17,8 +17,6 @@ namespace Network.Tools
         protected override void Start()
         {
             base.Start();
-
-            _decodeDataCoroutine = StartCoroutine(DecodeData());
         }
 
         public override void ProcessReceivedDataPackage(DataPackage dataPackage)
@@ -26,22 +24,24 @@ namespace Network.Tools
             if (dataPackage.DataType == DataType.Text)
             {
                 _dataPackagesQueue.Enqueue(dataPackage);
+
+                if (_decodeDataCoroutine == null)
+                {
+                    _decodeDataCoroutine = StartCoroutine(DecodeData());
+                }
             }
         }
 
         protected override IEnumerator DecodeData()
         {
-            while (true)
+            while (_dataPackagesQueue.Count > 0)
             {
-                while (_dataPackagesQueue.Count > 0)
-                {
-                    DataPackage dataPackage = _dataPackagesQueue.Dequeue();
-                    byte[] dataBytes = dataPackage.Data;
-                    string receivedString = Encoding.UTF8.GetString(dataBytes);
-                    OnStringReceived?.Invoke(receivedString);
+                DataPackage dataPackage = _dataPackagesQueue.Dequeue();
+                byte[] dataBytes = dataPackage.Data;
+                string receivedString = Encoding.UTF8.GetString(dataBytes);
+                OnStringReceived?.Invoke(receivedString);
 
-                    CheckBufferOverloading();
-                }
+                CheckBufferOverloading();
 
                 yield return null;
             }

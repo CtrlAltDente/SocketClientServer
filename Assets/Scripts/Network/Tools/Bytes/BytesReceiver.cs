@@ -13,25 +13,26 @@ namespace Network.Tools
 
         public override void ProcessReceivedDataPackage(DataPackage dataPackage)
         {
-            if(dataPackage.DataType == DataType.Bytes)
+            if (dataPackage.DataType == DataType.Bytes)
             {
                 _dataPackagesQueue.Enqueue(dataPackage);
+
+                if (_decodeDataCoroutine == null)
+                {
+                    _decodeDataCoroutine = StartCoroutine(DecodeData());
+                }
             }
         }
 
         protected override IEnumerator DecodeData()
         {
-            while (true)
+            while (_dataPackagesQueue.Count > 0)
             {
-                while(_dataPackagesQueue.Count > 0)
-                {
-                    DataPackage dataPackage = _dataPackagesQueue.Dequeue();
+                DataPackage dataPackage = _dataPackagesQueue.Dequeue();
 
-                    OnBytesReceived?.Invoke(dataPackage.Data);
+                OnBytesReceived?.Invoke(dataPackage.Data);
 
-                    CheckBufferOverloading();
-                }
-
+                CheckBufferOverloading();
                 yield return null;
             }
         }

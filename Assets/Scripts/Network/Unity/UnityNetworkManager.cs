@@ -33,12 +33,12 @@ namespace Network.UnityComponents
         [SerializeField]
         private int _receivedCount;
 
-        protected Task _networkOperationsTask;
+        protected Thread _networkOperationsThread;
 
         protected IProtocolLogic _protocolLogic;
 
         [SerializeField]
-        protected bool _isStared;
+        protected bool _isStarted;
 
         private void Start()
         {
@@ -49,8 +49,8 @@ namespace Network.UnityComponents
 
             _connectionDataManager.OnDataPackageReceived += RaiseDataPackageReceiveEvent;
 
-            _networkOperationsTask = new Task(ReceiveAndSendDataPackages);
-            _networkOperationsTask.Start();
+            _networkOperationsThread = new Thread(ReceiveAndSendDataPackages);
+            _networkOperationsThread.Start();
         }
 
         public void RaiseDataPackageReceiveEvent(DataPackage dataPackage)
@@ -82,7 +82,7 @@ namespace Network.UnityComponents
 
         private void ReceiveAndSendDataPackages()
         {
-            while (true)
+            while (_isStarted)
             {
                 if (_connectionDataManager.ConnectionsCount > 0)
                 {
