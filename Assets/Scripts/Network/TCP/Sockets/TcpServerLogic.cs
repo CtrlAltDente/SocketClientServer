@@ -64,7 +64,7 @@ namespace Network.TCP.SocketLogic
             }
             catch
             {
-                Debug.LogError("Tcp listener is Closed");
+                Debug.LogWarning("Tcp Listener is closed, new connection listening is stopped");
                 Shutdown();
             }
         }

@@ -65,7 +65,6 @@ namespace Network.TCP
         {
             while (IsConnected)
             {
-                Debug.Log("Connectio send data");
                 try
                 {
                     if (_networkStream.DataAvailable && _networkStream.CanRead)
@@ -86,9 +85,9 @@ namespace Network.TCP
                         }
                     }
                 }
-                catch (Exception e)
+                catch
                 {
-                    Debug.LogError(e.Message);
+                    Debug.LogWarning("Connection closed");
                     ShutdownThreads();
                     OnConnectionClosed?.Invoke(this);
                 }
@@ -99,7 +98,6 @@ namespace Network.TCP
         {
             while (IsConnected)
             {
-                Debug.Log("Connectio receive data");
                 try
                 {
                     if (_dataToSend.Count > 0)
@@ -111,9 +109,9 @@ namespace Network.TCP
                         }
                     }
                 }
-                catch (Exception e)
+                catch
                 {
-                    Debug.LogError(e.Message);
+                    Debug.LogWarning("Connection closed");
                     ShutdownThreads();
                     OnConnectionClosed?.Invoke(this);
                 }

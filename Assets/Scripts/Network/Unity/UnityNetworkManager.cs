@@ -98,8 +98,6 @@ namespace Network.UnityComponents
         {
             while (_isStarted)
             {
-
-                Debug.Log("Manager send data");
                 if (_connectionDataManager.ConnectionsCount > 0)
                 {
                     MoveDataPackageFromBufferToManager();
@@ -134,8 +132,6 @@ namespace Network.UnityComponents
             {
                 DataPackage dataPackage = _dataPackagesToSendBuffer.Dequeue();
                 _connectionDataManager.DataToSend.Enqueue(dataPackage);
-
-                Debug.Log("Data moved from buffer to send");
             }
         }
 

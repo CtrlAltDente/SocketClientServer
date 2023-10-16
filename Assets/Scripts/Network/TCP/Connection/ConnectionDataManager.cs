@@ -93,7 +93,7 @@ namespace Network.Processors
 
                 if (Connections.Contains(connection))
                 {
-                    Debug.Log("Removed");
+                    Debug.Log("Connection is removed");
                     Connections.Remove(connection);
                 }
             }
@@ -111,7 +111,7 @@ namespace Network.Processors
 
                 if (Connections.Contains(connection))
                 {
-                    Debug.Log("Removed");
+                    Debug.Log("Connection is removed");
                     Connections.Remove(connection);
                 }
             }
