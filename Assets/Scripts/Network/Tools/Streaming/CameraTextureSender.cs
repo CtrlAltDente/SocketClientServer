@@ -63,15 +63,22 @@ namespace Network.Tools
         {
             while (_camera != null)
             {
-                yield return new WaitForSeconds(1f / (float)_fps);
-                yield return new WaitForEndOfFrame();
+                if (_unityNetworkManager != null)
+                {
+                    yield return new WaitForSeconds(1f / (float)_fps);
+                    yield return new WaitForEndOfFrame();
 
-                ConvertCameraRenderTextureToTexture2D();
+                    ConvertCameraRenderTextureToTexture2D();
 
-                byte[] cameraTextureBytes = ImageConversion.EncodeToJPG(_cameraTexture, 75);
+                    byte[] cameraTextureBytes = ImageConversion.EncodeToJPG(_cameraTexture, 75);
 
-                DataPackage dataPackage = new DataPackage(cameraTextureBytes, Enums.DataType.Image);
-                _unityNetworkManager.SendDataPackage(dataPackage);
+                    DataPackage dataPackage = new DataPackage(cameraTextureBytes, Enums.DataType.Image);
+                    _unityNetworkManager.SendDataPackage(dataPackage);
+                }
+                else
+                {
+                    yield return null;
+                }
             }
         }
 
