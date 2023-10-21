@@ -15,8 +15,6 @@ namespace Network.TCP
         public TcpClient TcpClient { get; private set; }
         public string EndIp;
 
-        public bool IsConnected = false;
-
         public Action<Connection> OnConnectionClosed;
 
         public bool IsDataSending => _dataToSend.Count > 0;
@@ -40,15 +38,13 @@ namespace Network.TCP
             _dataSendingThread = new Thread(SendData);
             _dataReceivingThread = new Thread(ReceiveData);
 
-            IsConnected = true;
-
             _dataSendingThread.Start();
             _dataReceivingThread.Start();
         }
 
         public void ShutdownThreads()
         {
-            IsConnected = false;
+            TcpClient = null;
         }
 
         public void AddDataToSend(byte[] data)
@@ -63,7 +59,7 @@ namespace Network.TCP
 
         private async void ReceiveData()
         {
-            while (IsConnected)
+            while (TcpClient != null)
             {
                 try
                 {
@@ -88,15 +84,14 @@ namespace Network.TCP
                 catch
                 {
                     Debug.LogWarning("Connection closed");
-                    ShutdownThreads();
-                    OnConnectionClosed?.Invoke(this);
+                    TcpClient = null;
                 }
             }
         }
 
         private async void SendData()
         {
-            while (IsConnected)
+            while (TcpClient != null)
             {
                 try
                 {
@@ -112,8 +107,7 @@ namespace Network.TCP
                 catch
                 {
                     Debug.LogWarning("Connection closed");
-                    ShutdownThreads();
-                    OnConnectionClosed?.Invoke(this);
+                    TcpClient = null;
                 }
             }
         }

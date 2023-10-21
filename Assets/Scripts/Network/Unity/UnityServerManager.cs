@@ -13,7 +13,7 @@ namespace Network.UnityComponents
         {
             _protocolLogic = new TcpServerLogic(DoOnConnectionInitializedOperations);
             _protocolLogic.Initialize(serverIpAddress, serverPort);
-            _isStarted = true;
+            DoOnSuccessfullInitializationOperations();
         }
     }
 }

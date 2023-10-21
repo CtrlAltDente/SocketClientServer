@@ -29,7 +29,6 @@ namespace Network.Processors
         public void AddConnection(Connection connection)
         {
             Connections.Add(connection);
-            connection.OnConnectionClosed += RemoveClosedConnection;
         }
 
         public void ReceiveDataFromAll()
@@ -65,14 +64,9 @@ namespace Network.Processors
             }
         }
 
-        private void RemoveClosedConnection(Connection connection)
-        {
-            Connections.Remove(connection);
-        }
-
         private void ReadDataFromConnection(Connection connection)
         {
-            try
+            if (CheckNullConnection(connection))
             {
                 if (!connection.IsDataReceivingInProcess)
                 {
@@ -86,35 +80,28 @@ namespace Network.Processors
                     }
                 }
             }
-
-            catch (Exception e)
-            {
-                Debug.LogError(e.Message);
-
-                if (Connections.Contains(connection))
-                {
-                    Debug.Log("Connection is removed");
-                    Connections.Remove(connection);
-                }
-            }
         }
 
         private void AddDataToConnection(Connection connection, byte[] data)
         {
-            try
+            if (CheckNullConnection(connection))
             {
                 connection.AddDataToSend(data);
             }
-            catch (Exception e)
-            {
-                Debug.LogError(e.Message);
+        }
 
+        private bool CheckNullConnection(Connection connection)
+        {
+            if (connection.TcpClient == null)
+            {
                 if (Connections.Contains(connection))
                 {
                     Debug.Log("Connection is removed");
                     Connections.Remove(connection);
                 }
             }
+
+            return connection.TcpClient != null;
         }
     }
 }

@@ -32,7 +32,7 @@ namespace Network.TCP.SocketLogic
             }
             catch (Exception e)
             {
-                Debug.LogError(e.Message);
+                Debug.LogWarning(e.Message);
             }
         }
 
@@ -41,7 +41,6 @@ namespace Network.TCP.SocketLogic
             try
             {
                 _tcpClient.Close();
-                _tcpClient.Dispose();
             }
             catch (Exception e)
             {

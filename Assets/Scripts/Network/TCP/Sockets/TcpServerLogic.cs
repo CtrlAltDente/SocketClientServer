@@ -43,7 +43,7 @@ namespace Network.TCP.SocketLogic
             try
             {
                 _tcpListener.Stop();
-                ListenConnectionsThread.Abort();
+                _tcpListener = null;
             }
             catch (Exception e)
             {
@@ -53,19 +53,18 @@ namespace Network.TCP.SocketLogic
 
         private async void ListenNewConnections()
         {
-            try
+            while (_tcpListener != null)
             {
-                while (true)
+                try
                 {
                     TcpClient newClient = await _tcpListener.AcceptTcpClientAsync();
                     Connection newConnection = new Connection(newClient);
                     OnConnectionInitialized?.Invoke(newConnection);
                 }
-            }
-            catch
-            {
-                Debug.LogWarning("Tcp Listener is closed, new connection listening is stopped");
-                Shutdown();
+                catch
+                {
+                    Debug.LogWarning("Tcp Listener is closed, new connection listening is stopped");
+                }
             }
         }
     }

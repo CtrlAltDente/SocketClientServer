@@ -31,15 +31,15 @@ namespace Network.UnityComponents
         private Queue<DataPackage> _dataPackagesToSendBuffer = new Queue<DataPackage>();
 
         [SerializeField]
-        private int _receivedCount;
+        private int _receivedCount = 0;
 
         protected Thread _sendPackagesThread;
-        protected Task _processReceivedPackagesTask;
+        protected Thread _receivePackagesThread;
 
         protected IProtocolLogic _protocolLogic;
 
         [SerializeField]
-        protected bool _isStarted;
+        protected bool _isStarted = false;
 
         private void Start()
         {
@@ -47,19 +47,14 @@ namespace Network.UnityComponents
             {
                 Initialize();
             }
-
-            _connectionDataManager.OnDataPackageReceived += RaiseDataPackageReceiveEvent;
-
-            _sendPackagesThread = new Thread(SendDataPackages);
-            _sendPackagesThread.Start();
-
-            _processReceivedPackagesTask = new Task(ProcessReceivedPackages);
-            _processReceivedPackagesTask.Start();
         }
 
         private void OnDestroy()
         {
-            Shutdown();
+            if (_isStarted)
+            {
+                Shutdown();
+            }
         }
 
         public void RaiseDataPackageReceiveEvent(DataPackage dataPackage)
@@ -83,6 +78,7 @@ namespace Network.UnityComponents
         public void Shutdown()
         {
             _isStarted = false;
+            _connectionDataManager.OnDataPackageReceived -= RaiseDataPackageReceiveEvent;
             _connectionDataManager.ShutdownConnectionsThreads();
             _protocolLogic.Shutdown();
         }
@@ -92,6 +88,39 @@ namespace Network.UnityComponents
         protected void DoOnConnectionInitializedOperations(Connection connection)
         {
             _connectionDataManager.AddConnection(connection);
+        }
+
+        protected void DoOnSuccessfullInitializationOperations()
+        {
+            _isStarted = true;
+            StartCoroutine(ApplyDataToProcessors());
+
+            _connectionDataManager.OnDataPackageReceived += RaiseDataPackageReceiveEvent;
+
+            _sendPackagesThread = new Thread(SendDataPackages);
+            _sendPackagesThread.Start();
+
+            _receivePackagesThread = new Thread(ReceiveDataPackages);
+            _receivePackagesThread.Start();
+        }
+
+        private IEnumerator ApplyDataToProcessors()
+        {
+            while (_isStarted)
+            {
+                while (_receivedDataPackages.Count > 0)
+                {
+                    DataPackage dataPackage = _receivedDataPackages.Dequeue();
+
+                    OnDataPackageReceived?.Invoke(dataPackage);
+
+                    yield return null;
+                }
+
+                yield return null;
+            }
+
+            Debug.LogWarning("Data processing ended");
         }
 
         private void SendDataPackages()
@@ -111,9 +140,11 @@ namespace Network.UnityComponents
                     }
                 }
             }
+
+            Debug.LogWarning("Data sending ended");
         }
 
-        private void ProcessReceivedPackages()
+        private void ReceiveDataPackages()
         {
             while (_isStarted)
             {
@@ -121,9 +152,10 @@ namespace Network.UnityComponents
                 {
                     _connectionDataManager.ReceiveDataFromAll();
                     _receivedCount = _receivedDataPackages.Count;
-                    ProcessReceivedData();
                 }
             }
+
+            Debug.LogWarning("Data receiving ended");
         }
 
         private void MoveDataPackageFromBufferToManager()
@@ -132,16 +164,6 @@ namespace Network.UnityComponents
             {
                 DataPackage dataPackage = _dataPackagesToSendBuffer.Dequeue();
                 _connectionDataManager.DataToSend.Enqueue(dataPackage);
-            }
-        }
-
-        private void ProcessReceivedData()
-        {
-            while (_receivedDataPackages.Count > 0)
-            {
-                DataPackage dataPackage = _receivedDataPackages.Dequeue();
-
-                OnDataPackageReceived?.Invoke(dataPackage);
             }
         }
     }
