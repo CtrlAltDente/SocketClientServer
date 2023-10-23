@@ -6,6 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Network.Processors
@@ -31,27 +33,13 @@ namespace Network.Processors
             Connections.Add(connection);
         }
 
-        public void ReceiveDataFromAll()
+        public void CheckThatConnectionsAreActive()
         {
-            foreach (Connection connection in Connections)
+            for (int i = 0; i < Connections.Count; i++)
             {
-                ReadDataFromConnection(connection);
-            }
-        }
-
-        public void SendDataToAll()
-        {
-            DataToSendCount = DataToSend.Count;     //this is for debug
-
-            while (DataToSend.Count > 0)
-            {
-                DataPackage dataPackage = DataToSend.Dequeue();
-
-                byte[] data = dataPackage.DataPackageToBytes();
-
-                foreach (Connection connection in Connections)
+                if (!IsConnectionActive(Connections[i]))
                 {
-                    AddDataToConnection(connection, data);
+                    KillConnection(Connections[i]);
                 }
             }
         }
@@ -64,44 +52,70 @@ namespace Network.Processors
             }
         }
 
-        private void ReadDataFromConnection(Connection connection)
+        public void ReceiveDataFromAll()
         {
-            if (CheckNullConnection(connection))
+            Connection[] connections = Connections.ToArray();
+
+            foreach (Connection connection in connections)
             {
-                if (!connection.IsDataReceivingInProcess)
+                ReadDataFromConnection(connection);
+            }
+        }
+
+        public void SendDataToAll()
+        {
+            DataToSendCount = DataToSend.Count;     //this is for debug
+
+            while (DataToSend.Count > 0)
+            {
+                Connection[] connections = Connections.ToArray();
+
+                DataPackage dataPackage = DataToSend.Dequeue();
+
+                byte[] data = dataPackage.DataPackageToBytes();
+
+                foreach (Connection connection in connections)
                 {
-                    Queue<byte[]> connectionReceivedData = connection.GetAllReceivedData();
-
-                    while (connectionReceivedData.Count > 0)
-                    {
-                        DataPackage receivedDataPackage = new DataPackage(connectionReceivedData.Dequeue());
-
-                        OnDataPackageReceived?.Invoke(receivedDataPackage);
-                    }
+                    SendDataToConnection(connection, data);
                 }
             }
         }
 
-        private void AddDataToConnection(Connection connection, byte[] data)
+        private void ReadDataFromConnection(Connection connection)
         {
-            if (CheckNullConnection(connection))
+            if (!connection.IsDataReceivingInProcess)
+            {
+                Queue<byte[]> connectionReceivedData = connection.GetAllReceivedData();
+
+                while (connectionReceivedData.Count > 0)
+                {
+                    DataPackage receivedDataPackage = new DataPackage(connectionReceivedData.Dequeue());
+
+                    OnDataPackageReceived?.Invoke(receivedDataPackage);
+                }
+            }
+        }
+
+        private void SendDataToConnection(Connection connection, byte[] data)
+        {
+            if (IsConnectionActive(connection))
             {
                 connection.AddDataToSend(data);
             }
         }
 
-        private bool CheckNullConnection(Connection connection)
+        private bool IsConnectionActive(Connection connection)
         {
-            if (connection.TcpClient == null)
-            {
-                if (Connections.Contains(connection))
-                {
-                    Debug.Log("Connection is removed");
-                    Connections.Remove(connection);
-                }
-            }
-
             return connection.TcpClient != null;
+        }
+
+        private void KillConnection(Connection connection)
+        {
+            if (Connections.Contains(connection))
+            {
+                Debug.Log("Connection is removed");
+                Connections.Remove(connection);
+            }
         }
     }
 }
