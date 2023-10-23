@@ -1,6 +1,6 @@
 using Network.Data;
 using Network.TCP;
-using Network.TCP.SocketLogic;
+using Network.TCP.Core;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Network.TCP.SocketLogic
+namespace Network.TCP.Core
 {
     public class TcpClientLogic : TcpBaseLogic, IProtocolLogic
     {
