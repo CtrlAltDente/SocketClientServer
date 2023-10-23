@@ -19,7 +19,7 @@ namespace Network.UnityComponents
 
         [Range(20, 60)] public int UpdatesPerSecond = 60;
 
-        public string ServerIpAddress = "192.168.88.29";
+        public string ServerIpAddress = "127.0.0.1";
         public int ServerPort = 3334;
 
         public UnityEvent<DataPackage> OnDataPackageReceived = new UnityEvent<DataPackage>();

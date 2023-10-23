@@ -10,7 +10,7 @@ namespace Network.UnityComponents
 {
     public class NetworkInitializer : MonoBehaviour
     {
-        public string ServerIpAddress = "192.168.88.29";
+        public string ServerIpAddress = "127.0.0.1";
         public int ServerPort = 3334;
 
         public NetworkRole NetworkRole;

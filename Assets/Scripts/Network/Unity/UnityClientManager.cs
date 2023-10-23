@@ -12,7 +12,12 @@ namespace Network.UnityComponents
         public override void Initialize(string serverIpAddress, int serverPort)
         {
             _protocolLogic = new TcpClientLogic(DoOnConnectionInitializedOperations);
+            
+            ServerIpAddress = serverIpAddress;
+            ServerPort = serverPort;
+
             _protocolLogic.Initialize(serverIpAddress, serverPort);
+            
             DoOnSuccessfullInitializationOperations();
         }
     }
