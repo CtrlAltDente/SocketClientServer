@@ -13,11 +13,13 @@ namespace Network.Tools
         public UnityEvent<Texture2D> OnImageReady;
 
         public bool StartStreamAtStart;
+        public bool StreamIsActive;
 
         [SerializeField]
         private Camera _camera = default;
 
-        [SerializeField][Range(5,120)]
+        [SerializeField]
+        [Range(5, 120)]
         private int _fps = 40;
         [SerializeField]
         private Vector2 _imageSize = default;
@@ -45,12 +47,21 @@ namespace Network.Tools
 
         public void StartStream()
         {
-            CameraImageEncodingCoroutine = StartCoroutine(EncodeCameraImage());
+            if (CameraImageEncodingCoroutine == null)
+            {
+                StreamIsActive = true;
+                CameraImageEncodingCoroutine = StartCoroutine(EncodeCameraImage());
+            }
         }
 
         public void StopStream()
         {
-            StopCoroutine(CameraImageEncodingCoroutine);
+            if (CameraImageEncodingCoroutine != null)
+            {
+                StreamIsActive = false;
+                StopCoroutine(CameraImageEncodingCoroutine);
+                CameraImageEncodingCoroutine = null;
+            }
         }
 
         private void InitializeComponents()
@@ -61,25 +72,22 @@ namespace Network.Tools
 
         private IEnumerator EncodeCameraImage()
         {
-            while (_camera != null)
+            while (_camera != null && _unityNetworkManager != null)
             {
-                if (_unityNetworkManager != null)
-                {
-                    yield return new WaitForSeconds(1f / (float)_fps);
-                    yield return new WaitForEndOfFrame();
+                yield return new WaitForSeconds(1f / (float)_fps);
+                yield return new WaitForEndOfFrame();
 
-                    ConvertCameraRenderTextureToTexture2D();
+                ConvertCameraRenderTextureToTexture2D();
 
-                    byte[] cameraTextureBytes = ImageConversion.EncodeToJPG(_cameraTexture, 75);
+                byte[] cameraTextureBytes = ImageConversion.EncodeToJPG(_cameraTexture, 75);
 
-                    DataPackage dataPackage = new DataPackage(cameraTextureBytes, Enums.DataType.Image);
-                    _unityNetworkManager.SendDataPackage(dataPackage);
-                }
-                else
-                {
-                    yield return null;
-                }
+                DataPackage dataPackage = new DataPackage(cameraTextureBytes, Enums.DataType.Image);
+                _unityNetworkManager.SendDataPackage(dataPackage);
             }
+
+            StreamIsActive = false;
+            Debug.LogWarning("Camera image encoding is stopped!");
+            CameraImageEncodingCoroutine = null;
         }
 
         private void ConvertCameraRenderTextureToTexture2D()
