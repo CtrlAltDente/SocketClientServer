@@ -81,6 +81,7 @@ namespace Network.UnityComponents
             _connectionDataManager.OnDataPackageReceived -= RaiseDataPackageReceiveEvent;
             _connectionDataManager.ShutdownConnectionsThreads();
             _protocolLogic.Shutdown();
+            _protocolLogic = null;
         }
 
         public abstract void Initialize(string serverIpAddress, int serverPort);
@@ -93,7 +94,9 @@ namespace Network.UnityComponents
         protected void DoOnSuccessfullInitializationOperations()
         {
             _isStarted = true;
+            
             StartCoroutine(ApplyDataToProcessors());
+            StartCoroutine(AddCheckConnectionData());
 
             _connectionDataManager.OnDataPackageReceived += RaiseDataPackageReceiveEvent;
 
@@ -121,6 +124,19 @@ namespace Network.UnityComponents
             }
 
             Debug.LogWarning("Data processing ended");
+        }
+
+        private IEnumerator AddCheckConnectionData()
+        {
+            while (_isStarted)
+            {
+                yield return new WaitForSeconds(1f);
+                
+                _connectionDataManager.CheckThatConnectionsAreActive();
+
+                DataPackage dataPackage = new DataPackage(new byte[1] { 0 }, DataType.ConnectionCheck);
+                SendDataPackage(dataPackage);
+            }
         }
 
         private void SendDataPackages()

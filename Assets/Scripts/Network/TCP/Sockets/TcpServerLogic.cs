@@ -26,6 +26,9 @@ namespace Network.TCP.SocketLogic
         {
             try
             {
+                if (_tcpListener != null)
+                    return;
+
                 _tcpListener = new TcpListener(IPAddress.Parse(serverIpAddress), serverPort);
                 _tcpListener.Start();
 
@@ -35,6 +38,7 @@ namespace Network.TCP.SocketLogic
             catch (Exception e)
             {
                 Debug.LogError(e.Message);
+                Shutdown();
             }
         }
 
@@ -42,12 +46,16 @@ namespace Network.TCP.SocketLogic
         {
             try
             {
+                if (_tcpListener == null)
+                    return;
+
                 _tcpListener.Stop();
                 _tcpListener = null;
             }
             catch (Exception e)
             {
                 Debug.LogError(e.Message);
+                _tcpListener = null;
             }
         }
 

@@ -31,6 +31,9 @@ namespace Network.UnityComponents
 
         public void Initialize()
         {
+            if (NetworkManager != null)
+                return;
+
             NetworkManager = NetworkRoleManagerFactory.CreateNetworkManager(NetworkRole, gameObject);
             NetworkManager.Initialize(ServerIpAddress, ServerPort);
             OnNetworkManagerInitialized?.Invoke(NetworkManager);
@@ -38,6 +41,9 @@ namespace Network.UnityComponents
 
         public void Shutdown()
         {
+            if (NetworkManager == null)
+                return;
+
             NetworkManager.Shutdown();
             Destroy(NetworkManager);
         }
