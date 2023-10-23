@@ -17,7 +17,7 @@ namespace Network.UnityComponents
     {
         public bool InitializeOnStart = false;
 
-        [Range(20, 60)] public int UpdatesPerSecond = 60;
+        [Range(20, 120)] public int NetworkUpdatesPerSecond = 60;
 
         public string ServerIpAddress = "127.0.0.1";
         public int ServerPort = 3334;
@@ -143,6 +143,8 @@ namespace Network.UnityComponents
         {
             while (_isStarted)
             {
+                Thread.Sleep(1000 / NetworkUpdatesPerSecond);
+
                 if (_connectionDataManager.ConnectionsCount > 0)
                 {
                     MoveDataPackageFromBufferToManager();
@@ -164,6 +166,8 @@ namespace Network.UnityComponents
         {
             while (_isStarted)
             {
+                Thread.Sleep(1000 / NetworkUpdatesPerSecond);
+
                 if (_connectionDataManager.ConnectionsCount > 0)
                 {
                     _connectionDataManager.ReceiveDataFromAll();
