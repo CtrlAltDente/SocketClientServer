@@ -21,6 +21,9 @@ namespace Network.TCP.SocketLogic
         {
             try
             {
+                if (_tcpClient != null)
+                    return;
+
                 _tcpClient = new TcpClient();
 
                 await _tcpClient.ConnectAsync(serverIpAddress, serverPort);
@@ -33,6 +36,7 @@ namespace Network.TCP.SocketLogic
             catch (Exception e)
             {
                 Debug.LogWarning(e.Message);
+                Shutdown();
             }
         }
 
@@ -40,7 +44,11 @@ namespace Network.TCP.SocketLogic
         {
             try
             {
+                if (_tcpClient == null)
+                    return;
+
                 _tcpClient.Close();
+                _tcpClient = null;
             }
             catch (Exception e)
             {
