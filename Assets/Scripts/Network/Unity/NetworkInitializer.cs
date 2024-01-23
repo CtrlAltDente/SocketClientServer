@@ -21,10 +21,15 @@ namespace Network.UnityComponents
 
         public UnityEvent<UnityNetworkManager> OnNetworkManagerInitialized;
 
-        [SerializeField] private bool _initializeOnStart = false;
+        [SerializeField]
+        private bool _initializeOnStart = false;
+        [SerializeField]
+        private bool _useLocalNetworkIpAddress = false;
 
         private void Start()
         {
+            SetLocalIpAddress();
+
             if (_initializeOnStart)
             {
                 Initialize(ServerIpAddress);
@@ -71,6 +76,14 @@ namespace Network.UnityComponents
             }
 
             return string.Empty;
+        }
+
+        private void SetLocalIpAddress()
+        {
+            if (_useLocalNetworkIpAddress)
+            {
+                ServerIpAddress = GetLocalIpAddress();
+            }
         }
     }
 }
