@@ -3,6 +3,8 @@ using Network.Factories;
 using Network.Interfaces;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -25,18 +27,27 @@ namespace Network.UnityComponents
         {
             if (_initializeOnStart)
             {
-                Initialize();
+                Initialize(ServerIpAddress);
             }
         }
 
-        public void Initialize()
+        public void Initialize(string ipAddress)
         {
             if (NetworkManager != null)
                 return;
 
-            NetworkManager = NetworkRoleManagerFactory.CreateNetworkManager(NetworkRole, gameObject);
-            NetworkManager.Initialize(ServerIpAddress, ServerPort);
-            OnNetworkManagerInitialized?.Invoke(NetworkManager);
+            string targetIpAddress = ipAddress == string.Empty ? ServerIpAddress : ipAddress;
+
+            try
+            {
+                NetworkManager = NetworkRoleManagerFactory.CreateNetworkManager(NetworkRole, gameObject);
+                NetworkManager.Initialize(targetIpAddress, ServerPort);
+                OnNetworkManagerInitialized?.Invoke(NetworkManager);
+            }
+            catch
+            {
+                Shutdown();
+            }
         }
 
         public void Shutdown()
@@ -46,6 +57,20 @@ namespace Network.UnityComponents
 
             NetworkManager.Shutdown();
             Destroy(NetworkManager);
+        }
+
+        public string GetLocalIpAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+
+            return string.Empty;
         }
     }
 }
