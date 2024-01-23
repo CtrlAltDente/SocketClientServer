@@ -41,6 +41,8 @@ namespace Network.UnityComponents
         [SerializeField]
         protected bool _isStarted = false;
 
+        public ConnectionDataManager ConnectionDataManager => _connectionDataManager;
+
         private void Start()
         {
             if (InitializeOnStart)
