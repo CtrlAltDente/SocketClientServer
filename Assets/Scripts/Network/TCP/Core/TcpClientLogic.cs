@@ -24,7 +24,7 @@ namespace Network.TCP.Core
                 if (_tcpClient != null)
                     return;
 
-                _tcpClient = new TcpClient();
+                _tcpClient = new TcpClient(AddressFamily.InterNetwork);
 
                 await _tcpClient.ConnectAsync(serverIpAddress, serverPort);
 
