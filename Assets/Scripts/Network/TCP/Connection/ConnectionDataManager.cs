@@ -83,6 +83,22 @@ namespace Network.Processors
             }
         }
 
+        public void SendDataToConnection(DataPackage dataPackage, string endIp)
+        {
+            foreach(Connection connection in Connections)
+            {
+                if(connection.EndIp.Equals(endIp))
+                {
+                    SendDataToConnection(dataPackage, connection);
+                }
+            }
+        }
+
+        public void SendDataToConnection(DataPackage dataPackage, Connection connection)
+        {
+            connection.AddDataToSend(dataPackage.DataPackageToBytes());
+        }
+
         private void ReadDataFromConnection(Connection connection)
         {
             if (!connection.IsDataReceivingInProcess)
