@@ -42,6 +42,8 @@ namespace Network.UnityComponents
         protected bool _isStarted = false;
 
         public ConnectionDataManager ConnectionDataManager => _connectionDataManager;
+        public NetworkRole NetworkRole { get; private protected set; }
+        public string LocalEndPoint => _protocolLogic.LocalEndPoint;
 
         private void Start()
         {

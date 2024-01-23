@@ -41,8 +41,9 @@ namespace Network.UnityComponents
             if (NetworkManager != null)
                 return;
 
+            ipAddress = ipAddress.Replace(',', '.');
             string targetIpAddress = ipAddress == string.Empty ? ServerIpAddress : ipAddress;
-
+            
             try
             {
                 NetworkManager = NetworkRoleManagerFactory.CreateNetworkManager(NetworkRole, gameObject);

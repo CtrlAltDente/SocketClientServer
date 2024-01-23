@@ -21,6 +21,7 @@ namespace Network.UnityComponents
 
             _protocolLogic.Initialize(serverIpAddress, serverPort);
 
+            NetworkRole = Enums.NetworkRole.Server;
             DoOnSuccessfullInitializationOperations();
         }
     }

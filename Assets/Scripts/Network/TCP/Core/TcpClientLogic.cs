@@ -12,6 +12,8 @@ namespace Network.TCP.Core
     {
         private TcpClient _tcpClient;
 
+        public string LocalEndPoint => _tcpClient.Client.LocalEndPoint.ToString();
+
         public TcpClientLogic(Action<Connection> OnConnection) : base(OnConnection)
         {
 

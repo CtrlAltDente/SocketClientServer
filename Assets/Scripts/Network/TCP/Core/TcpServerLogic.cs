@@ -17,6 +17,8 @@ namespace Network.TCP.Core
 
         private Thread ListenConnectionsThread;
 
+        public string LocalEndPoint => _tcpListener.LocalEndpoint.ToString();
+
         public TcpServerLogic(Action<Connection> OnConnectionAction) : base(OnConnectionAction)
         {
 
