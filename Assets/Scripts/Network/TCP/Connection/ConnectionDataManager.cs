@@ -17,6 +17,9 @@ namespace Network.Processors
 
         public Action<DataPackage> OnDataPackageReceived;
 
+        public Action<Connection> OnConnected;
+        public Action<Connection> OnDisconnected;
+
         public bool IsConnected => Connections.Count > 0;
         public int ConnectionsCount => Connections.Count;
 
@@ -29,6 +32,7 @@ namespace Network.Processors
         public void AddConnection(Connection connection)
         {
             Connections.Add(connection);
+            OnConnected?.Invoke(connection);
         }
 
         public void CheckThatConnectionsAreActive()
@@ -111,6 +115,7 @@ namespace Network.Processors
         {
             if (Connections.Contains(connection))
             {
+                OnDisconnected?.Invoke(connection);
                 Debug.Log("Connection is removed");
                 Connections.Remove(connection);
             }
