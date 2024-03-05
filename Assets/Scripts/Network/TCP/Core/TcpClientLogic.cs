@@ -19,7 +19,7 @@ namespace Network.TCP.Core
 
         }
 
-        public async void Initialize(string serverIpAddress, int serverPort)
+        public void Initialize(string serverIpAddress, int serverPort)
         {
             try
             {
@@ -28,7 +28,7 @@ namespace Network.TCP.Core
 
                 _tcpClient = new TcpClient(AddressFamily.InterNetwork);
 
-                await _tcpClient.ConnectAsync(serverIpAddress, serverPort);
+                _tcpClient.Connect(serverIpAddress, serverPort);
 
                 Connection newConnection = new Connection(_tcpClient);
                 OnConnectionInitialized?.Invoke(newConnection);
